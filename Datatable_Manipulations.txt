@@ -1,0 +1,39 @@
+File.ReadFromCSVFile.ReadCSV CSVFile: CSVFilePath Encoding: File.CSVEncoding.UTF8 TrimFields: True FirstLineContainsColumnNames: True ColumnsSeparator: File.CSVColumnsSeparator.SystemDefault CSVTable=> TrainingData
+# Get Top N rows in a datatable
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''C:\\PAD''' Script: $''' resultTable = TrainingTable.AsEnumerable().Take(5).CopyToDataTable()''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''In''' @'name:resultTable': $'''''' @'type:resultTable': $'''Datatable''' @'direction:resultTable': $'''Out''' @resultTable=> TopFiveData
+# Skip first N rows in a datatable. Queries that uses AsEnumerble the References needs to be loaded. Follow steps as mentioned in article to load references
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''C:\\PAD''' Script: $'''resultTable = TrainingTable.AsEnumerable().Skip(5).CopyToDataTable()''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''In''' @'name:resultTable': $'''''' @'type:resultTable': $'''Datatable''' @'direction:resultTable': $'''Out''' @resultTable=> SkipFiveData
+# Insert new Columns in the Training datatable at the last, First and specific index. To view output keep breakpoint and check how new columns are inserted.
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''''' Script: $'''TrainingTable.Columns.Add(\"Status\", GetType(String))
+TrainingTable.Columns.Add(\"UniqueID\", GetType(Int32))
+ TrainingTable.Columns.Add(\"Remarks\", GetType(String)).SetOrdinal(0)
+  TrainingTable.Columns.Add(\"Comments\", GetType(String)).SetOrdinal(6)''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''InOut''' @TrainingTable=> TrainingData
+# Delete columns in the datatable based on Column Name and column Index. All the new columns created in step 6 is deleted using below script
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''''' Script: $''' TrainingTable.Columns.RemoveAt(6)  \'removes column at specified index.
+TrainingTable.Columns.Remove(\"Remarks\") \'removes column based on name.
+TrainingTable.Columns.Remove(\"Status\")
+TrainingTable.Columns.Remove(\"UniqueID\")''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''InOut''' @TrainingTable=> TrainingData
+# Get maximum value,MinimumValue and Average value of a column in datatable.
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''C:\\PAD''' Script: $'''MaxValue = TrainingTable.AsEnumerable().Max(Function(row) cint(row(\"MonthNum\")))
+MinValue = TrainingTable.AsEnumerable().Min(Function(row) cint(row(\"MonthNum\")))
+AvgValue = TrainingTable.AsEnumerable().Average(Function(row) cint(row(\"MonthNum\")))''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''In''' @'name:MaxValue': $'''''' @'type:MaxValue': $'''Int''' @'direction:MaxValue': $'''Out''' @'name:MinValue': $'''''' @'type:MinValue': $'''Int''' @'direction:MinValue': $'''Out''' @'name:AvgValue': $'''''' @'type:AvgValue': $'''Int''' @'direction:AvgValue': $'''Out''' @MaxValue=> MaxValue @MinValue=> MinValue @AvgValue=> AverageValue
+# sort the TrainingData Table based on column MonthNum in both Ascending and Descending order.
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''C:\\PAD''' Script: $'''\'Sorts in Ascending order
+SortedAscendingTable = (From row In TrainingTable.AsEnumerable()
+                 Order By Convert.ToInt32(row(\"MonthNum\"))
+                 Select row).CopyToDataTable()
+\'sorts in Descending order                 
+SortedDescendingTable = (From row In TrainingTable.AsEnumerable()
+               Order By Convert.ToInt32(row(\"MonthNum\")) Descending Select row).CopyToDataTable()''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''In''' @'name:SortedAscendingTable': $'''''' @'type:SortedAscendingTable': $'''Datatable''' @'direction:SortedAscendingTable': $'''Out''' @'name:SortedDescendingTable': $'''''' @'type:SortedDescendingTable': $'''Datatable''' @'direction:SortedDescendingTable': $'''Out''' @SortedAscendingTable=> SortedAscData @SortedDescendingTable=> SortedDescendingTable
+# Custom sort based on column Month Name. In custom order intentionally months order is arrenged in correctly to validate the sorting. 
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''C:\\PAD''' Script: $'''\' Custom order of month
+Dim customOrderMonths As String() = {\"January\",\"March\",\"April\", \"February\", \"May\", \"June\", \"July\", \"August\", \"September\", \"October\", \"November\", \"December\"}
+\' Sort the table using LINQ query with custom order
+        Dim sortedRows = From row As DataRow In TrainingTable.Rows
+                         Order By Array.IndexOf(customOrderMonths, CStr(row(\"Month Name\")))
+                         Select row
+         Dim sortedTable As DataTable = TrainingTable.Clone()
+        For Each row As DataRow In sortedRows
+            sortedTable.ImportRow(row)
+        Next
+        resultTable = sortedTable''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''In''' @'name:resultTable': $'''''' @'type:resultTable': $'''Datatable''' @'direction:resultTable': $'''Out''' @resultTable=> CustomSortData

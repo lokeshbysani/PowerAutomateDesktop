@@ -1,0 +1,19 @@
+File.ReadFromCSVFile.ReadCSV CSVFile: CSVFilePath Encoding: File.CSVEncoding.UTF8 TrimFields: True FirstLineContainsColumnNames: True ColumnsSeparator: File.CSVColumnsSeparator.SystemDefault CSVTable=> TrainingData
+# Removes Duplicate Rows from Training Table and stores in it Unique Table.
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''''' Script: $'''resultTable = TrainingTable.DefaultView.ToTable(True)''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''In''' @'name:resultTable': $'''''' @'type:resultTable': $'''Datatable''' @'direction:resultTable': $'''Out''' @resultTable=> uniqueRecordsTable
+/# Removes Duplicate Rows from Training Table based on one column [Month Name] and stores it in UniqueMonthsData.
+g.First fetches first record#/
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''C:\\PAD''' Script: $'''resultTable = TrainingTable.AsEnumerable().GroupBy(Function(i) i.Field(Of String)(\"Month Name\")).Select(Function(g) g.First).CopyToDataTable''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''In''' @'name:resultTable': $'''''' @'type:resultTable': $'''Datatable''' @'direction:resultTable': $'''Out''' @resultTable=> uniqueFirstRecordTable
+/# Removes Duplicate Rows from Training Table based on one column [Month Name] and stores it in UniqueMonthsData.
+g.Last fetches last record#/
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''C:\\PAD''' Script: $'''resultTable = TrainingTable.AsEnumerable().GroupBy(Function(i) i.Field(Of String)(\"Month Name\")).Select(Function(g) g.Last).CopyToDataTable''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''In''' @'name:resultTable': $'''''' @'type:resultTable': $'''Datatable''' @'direction:resultTable': $'''Out''' @resultTable=> uniqueLastRecordTable
+/# Removes Duplicate records from Training Table based on multiple columns [Month Name] and [Consultant]. 
+#/
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''C:\\PAD''' Script: $'''resultTable = TrainingTable.AsEnumerable() _
+    .GroupBy(Function(i) New With {
+        Key .MonthName = i.Field(Of String)(\"Month Name\"),
+        Key .Consultant = i.Field(Of String)(\"CONSULTANT\")
+    }) _
+    .Select(Function(g) g.First()) _
+    .CopyToDataTable()
+''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''In''' @'name:resultTable': $'''''' @'type:resultTable': $'''Datatable''' @'direction:resultTable': $'''Out''' @resultTable=> MultiFilteredRecordsTable

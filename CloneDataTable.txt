@@ -1,0 +1,3 @@
+File.ReadFromCSVFile.ReadCSV CSVFile: CSVFilePath Encoding: File.CSVEncoding.UTF8 TrimFields: True FirstLineContainsColumnNames: True ColumnsSeparator: File.CSVColumnsSeparator.SystemDefault CSVTable=> TrainingData
+# Clones Datatable into a new table called ClonedTable. It has same columns as original table with no data.
+Scripting.RunDotNetScript Imports: $'''''' Language: System.DotNetActionLanguageType.VisualBasic ReferenceRootPath: $'''''' Script: $'''resultTable = TrainingTable.clone()''' @'name:TrainingTable': TrainingData @'type:TrainingTable': $'''Datatable''' @'direction:TrainingTable': $'''In''' @'name:resultTable': $'''''' @'type:resultTable': $'''Datatable''' @'direction:resultTable': $'''Out''' @resultTable=> ClonedTable
